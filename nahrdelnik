@@ -1,0 +1,68 @@
+import tkinter as tk
+import random
+
+WIDTH = 500
+HEIGHT = 500
+colors = ['pink', 'yellow', 'green', 'blue']
+count = 40
+size = 20
+movable = []
+start = size
+clicked_ball = []
+is_ball_clicked= False
+
+def setup():
+    global movable
+    for i in range(40):
+        x = random.randrange(0, WIDTH-size)
+        y = random.randrange(0, HEIGHT-size-40)
+        movable.append(canvas.create_oval(x, y, x+size, y+size, fill=colors[i//10]))
+    image = tk.PhotoImage('koralik_nit.png')
+    movable.append(canvas.create_image(0, HEIGHT-40, image=image, anchor=tk.NW))
+
+def checkit(e):
+    global clicked_ball, is_ball_clicked
+    zoz = canvas.find_overlapping(e.x, e.y, e.x+1, e.y+1)
+    if len(zoz) != 0 and zoz[0] in movable:
+        if not is_ball_clicked:
+            clicked_ball = zoz[0]
+            is_ball_clicked = True
+            print('Ball clicked:', clicked_ball)
+
+def moveit():
+    global clicked_ball, is_ball_clicked
+    if is_ball_clicked:
+        coor = canvas.coords(clicked_ball)
+        finalpos = (WIDTH-size, HEIGHT-size)
+        dx = finalpos[0] - coor[2]
+        dy = finalpos[1] - coor[3]
+        if dx > dy:
+            dx = dx / dy
+            dy = 1
+        if dy > dx:
+            dy = dy / dx
+            dx = 1
+        if abs(finalpos[0] - coor[2]) <= abs(dx):
+            is_ball_clicked = False
+        canvas.move(clicked_ball, dx, dy)
+        if is_ball_clicked == WIDTH:
+            move2()
+    canvas.after(5, moveit)
+
+def move2():
+    global start, clicked_ball
+    coord_ball = canvas.coords(clicked_ball)
+    if coord_ball[0] > start:
+        canvas.move(clicked_ball,-1,0)
+        canvas.after(5,move2)
+    else:
+        start += size
+        clicked_ball = []
+
+root = tk.Tk()
+canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT, bg='white')
+canvas.bind('<Button-1>', checkit)
+canvas.pack()
+moveit()
+setup()
+root.mainloop()
